@@ -11,7 +11,7 @@
 
 前端使用vue搭建页面。使用vuex作为状态管理，将websocket以及webrtc连接对象放在vuex中当作类似的全局变量。
 
-学习笔记为：
+学习笔记为：学习笔记目录下，推荐观看顺序netty-->webrtc
 
 
 
