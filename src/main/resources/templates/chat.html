@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>聊天模块</title>
+    <script src="../static/video.js"></script>
+    <script src="../static/function.js"></script>
+    <style>
+        /* 基本样式 */
+        .window {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            padding: 20px;
+            border: 1px solid #ccc;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+        }
+
+        #overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+    </style>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+
+        input, button {
+            margin: 5px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            font-size: 16px;
+        }
+
+        textarea {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            width: 600px;
+            padding: 50px;
+            box-sizing: border-box;
+            resize: none;
+            text-align: left; /* 水平靠左 */
+
+        }
+
+        button {
+            background-color: #007BFF;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        button:disabled {
+            background-color: #cccccc;
+            color: #666666;
+            cursor: not-allowed;
+        }
+
+        img {
+            max-width: 100%;
+            height: auto;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        #dialog {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            padding: 20px;
+            border: 1px solid #ccc;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            text-align: center;
+        }
+
+        #dialog button {
+            margin: 5px;
+        }
+
+        #overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+
+        video {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        select {
+            width: 5%;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background-color: #fff;
+            color: #333;
+            margin-bottom: 20px;
+            appearance: none; /* 去掉默认的下拉箭头 */
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="%236c757d" viewBox="0 0 16 16"><path d="M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z"/></svg>');
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            background-size: 16px;
+        }
+
+        /* 鼠标悬停样式 */
+        select:hover {
+            border-color: #888;
+        }
+
+        /* 聚焦样式 */
+        select:focus {
+            border-color: #007bff;
+            outline: none;
+            box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+        }
+
+        input[type="file"] {
+            width: 15%;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background-color: #fff;
+            color: #333;
+            margin-bottom: 20px;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="%236c757d" viewBox="0 0 16 16"><path d="M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z"/></svg>');
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            background-size: 16px;
+        }
+        /*视频父标签*/
+        .video_container {
+            display: none;
+            position: relative;
+            width: 320px;
+            height: 240px;
+            margin: 10px; /* 外边距 */
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* 添加阴影效果 */
+            border-radius: 5px; /* 圆角效果 */
+            overflow: hidden; /* 防止内容溢出 */
+        }
+
+        #localvideo {
+            width: 320px;
+            height: 240px;
+        }
+
+        .video_label {
+            position: absolute;
+            top: 0;
+            left: 0;
+            background: rgba(0, 0, 0, 0); /* 半透明背景 */
+            color: black;
+            padding: 5px 10px;
+            font-size: 14px;
+            z-index: 2; /* 确保标签在视频之上 */
+            border-radius: 0 0 0 5px; /* 可选：圆角效果 */
+        }
+        /*视频流展示区域*/
+        .video_show {
+            display: flex;
+            flex-wrap: wrap; /* 允许换行 */
+            gap: 10px; /* 项目之间的间距 */
+            justify-content: center; /* 水平居中对齐 */
+        }
+    </style>
+</head>
+<body>
+<!--聊天框-->
+<div>
+    <div>
+        <label for="recipient_message"></label><textarea id="recipient_message" placeholder="聊天信息" readonly
+                                                         style="width: 600px; height: 50px;"></textarea>
+        <br>
+        <img src="" alt="" id="getimage">
+    </div>
+    <div>
+        <input id="friendName" type="text" placeholder="请输入要查询的用户名">
+        <button type="button" onclick="friendUser()">查询添加</button>
+        <button type="button" onclick="friendApply()">新的好友申请</button>
+        <button type="button" onclick="myApply()">我的邀请</button>
+    </div>
+    <div>
+        <button onclick="explainOpen()">操作说明</button>
+        <!--发送部分-->
+        <label>
+            <select id="send_type" name="type">
+                <option value="Private">私发好友</option>
+                <option value="Group">群发</option>
+            </select>
+            <select id="target" name="target">
+            </select>
+            <input id="message" type="text" placeholder="输入信息">
+            <button type="button" id="send" onclick="sendMessage() ">发送信息</button>
+            <br>
+            <!--假设：允许jpg格式-->
+            <input type="file" id="image" accept="image/jpeg">
+            <button type="button" id="send_img" onclick="sendImage()">发送图片</button>
+            <br>
+        </label>
+    </div>
+
+</div>
+
+<!--视频通话部分-->
+<div id="video">
+    <label for="target_names"></label><input type="text" id="target_names"
+                                             placeholder="输入你要拨打的用户名列表,以','分割">
+    <button type="button" id="call" onclick="call()">视频通话</button>
+    <button type="button" id="end" onclick="end()">总有人先挂</button>
+    <br>
+    <button type="button" id="openOrCloseVideo" onclick=openCloseVideo(this) name="open">开启摄像头</button>
+    <button type="button" id="openOrCloseAudio" onclick=openCloseAudio(this) name="open">开启麦克风</button>
+    <p>当前聊天房间人数为 <span id="sum"></span></p>
+    <br>
+</div>
+<!--视频流展示区域-->
+<div id="video_show" class="video_show">
+    <div class="video_container"  id="div_localvideo">
+        <!--    设置为自动静音播放，autoplay（自动） muted（静音，不然浏览器不允许）-->
+        <video id="localvideo" autoplay muted controls width="320" height="240" ></video>
+        <div class="video_label" id="localvideo_name">hello</div>
+    </div>
+</div>
+
+
+<!--弹窗-->
+<div id="overlay"></div>
+<div class="window" id="dialog">
+    <p id="describe">你确定要继续吗？</p>
+    <button id="refuse">拒绝</button>
+    <button id="accept">同意</button>
+</div>
+<div class="window" id="selectAudio">
+    <p>进入通话默认打开麦克风？</p>
+    <button id="no">不开</button>
+    <button id="yes">开启</button>
+</div>
+<div class="window" id="login">
+    <p style="text-align:center">登录</p>
+    <label>
+    <!--        oninput属性表示内容变化就调用函数-->
+    <input id="user" type="text" placeholder="输入用户名" oninput="queryIsNull(this)"/><br>
+        <input type="password" id="pass" placeholder="输入密码"><br>
+        <button id="button_login" type="button"  onclick="login()" disabled style="text-align: center">登录</button><br>
+        <a  onclick="toRegister()" >注册</a>
+    </label>
+</div>
+<div class="window" id="explain">
+    <img src="../static/img/img.png" title="操作说明" width="885" height="236" style="float:right;" alt="稍等">
+</div>
+
+<!--查询的好友列表-->
+<div class="window" id="friends">
+    <!--    创建表格容纳查询到的用户列表-->
+    <table id="friendsTable" border='1'>
+        <tr>
+            <!--            <th>用户id</th>-->
+            <th>用户名</th>
+            <th>用户手机号</th>
+            <th>操作</th>
+        </tr>
+
+    </table>
+</div>
+<!--查询的新的好友申请-->
+<div class="window" id="applys">
+    <!--    创建表格容纳查询到的用户列表-->
+    <table id="applysTable" border='1'>
+        <tr>
+            <!--            <th>用户id</th>-->
+            <th>邀请时间</th>
+            <th>谁向你发来好友申请</th>
+            <th>操作</th>
+        </tr>
+
+    </table>
+</div>
+
+<!--查询自己发起的好友申请-->
+<div class="window" id="myApplys">
+    <!--    创建表格容纳查询到的用户列表-->
+    <table id="myApplysTable" border='1'>
+        <tr>
+            <!--            <th>用户id</th>-->
+            <th>邀请时间</th>
+            <th>向谁发起邀请</th>
+        </tr>
+    </table>
+</div>
+
+<!--是否继续视频聊天的弹窗-->
+<div class="window" id="continue">
+    <p>检测到您有未结束的视频聊天,是否继续？</p>
+    <button id="result-nocontainer">关闭</button>
+    <button id="result-container">继续</button>
+</div>
+<!--注册的弹窗-->
+<div class="window" id="register">
+    <p style="text-align:center">注册</p>
+    <label>
+    <input type="text" id="userName" placeholder="输入用户名"><br>
+    <input type="password" id="password" placeholder="输入密码"><br>
+    <input type="email" id="email" placeholder="输入邮箱">
+    <button type="button"  onclick="getCode()">获取验证码</button><br>
+    <input type="text" id="code" placeholder="输入验证码"><br>
+    <button type="button" onclick="register()" style="text-align: center">注册</button><br>
+        <a onclick="toLogin()">登录</a>
+    </label>
+</div>
+</body>
+
+</html>

@@ -1,0 +1,63 @@
+#netty连接的端口
+netty:
+  server:
+    port: 8443
+
+spring:
+    #数据库连接,连接华为云服务器的mysql
+  web:
+    resources:
+      #指明静态资源的的存放位置
+      static-locations: classpath:/
+  datasource:
+    url: jdbc:mysql://139.9.200.130:3306/netty_webchat
+    username: test
+    password: 123456
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    #解决使用过程中不能连接数据库的问题
+    hikari:
+      connection-test-query: "SELECT 1" # 连接测试查询（MySQL 8以下使用SELECT 1，8以上可能需要使用SELECT 1）
+      minimum-idle: 5 # 最小空闲连接数
+      maximum-pool-size: 20 # 最大连接池大小
+      idle-timeout: 30000 # 空闲连接超时时间（毫秒）
+      max-lifetime: 28000000 # 连接最大存活时间（略小于MySQL的wait_timeout），这里设置为7小时45分钟（假设MySQL为8小时）
+      connection-timeout: 30000 # 连接获取超时时间
+      validation-timeout: 5000 # 验证查询超时时间
+      leak-detection-threshold: 5000 # 连接泄漏检测阈值（毫秒）
+  #邮件发送配置
+  mail:
+    #发送的邮箱的对应host,就是smtp.邮x
+    host: smtp.qq.com
+    #自己的账号
+    username: lzj_luoposhan@qq.com
+    #是授权码，不是密码
+    password: vzgchkkijwjpcjef
+    port: 465
+    protocol: smtp
+    properties:
+      mail:
+        smtp:
+          auth: true
+          socketFactory:
+            class: javax.net.ssl.SSLSocketFactory
+            fallback: false
+          ssl:
+            enable: true
+
+
+#使用华为云服务器那边的
+influxdb:
+  url: http://139.9.200.130:8086
+  token: CrQCPaTKzVdxycpvEAS9nqf8RR8EkWVKQaC7h_QdVATcZoFs7uvCrgxIghETmmeCt4U19JnIMLSPYIKEed58fQ==
+  org: myInfluxdb
+  bucket: webChat
+
+#端口配置
+server:
+  port: 8080 #springboot的端口
+  #ssl证书配置
+#  ssl:
+#    key-alias: bujianchangan.asia #密钥别名,别名为证书的绑定域名。
+#    key-store-password: so57ko374e5  #解压文件的密钥
+#    key-store-type: PKCS12 #类型
+#    key-store: classpath:bujianchangan.asia.pfx #类路径的密钥文件路径
